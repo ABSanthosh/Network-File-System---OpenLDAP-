@@ -13,14 +13,6 @@ GREEN='\033[0;32m' # Green
 RED='\033[0;31m'   # Red
 NC='\033[0m'       # No Color
 
-
-check_sudo() {
-  if [[ $EUID -ne 0 ]]; then
-    echo -e "${RED}Error: This script must be run as root (sudo).${NC}" >&2
-    exit 1
-  fi
-}
-
 success(){
     echo -e "${GREEN}$1${NC}"
 }
@@ -29,6 +21,13 @@ error(){
     echo -e "${RED}$1${NC}"
     [ "$2" = false ] && return
     exit 1
+}
+
+check_sudo() {
+  if [[ $EUID -ne 0 ]]; then
+    error "Error: This script must be run as root (sudo)."
+    exit 1
+  fi
 }
 
 ClearTempFiles(){

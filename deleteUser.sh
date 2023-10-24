@@ -11,7 +11,6 @@ check_sudo() {
   fi
 }
 
-
 # Function to display the list of users
 list_users() {
  echo "List of Users Who Can Log In:"
