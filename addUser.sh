@@ -14,11 +14,11 @@ RED='\033[0;31m'   # Red
 NC='\033[0m'       # No Color
 
 success(){
-    echo -e "${GREEN}$1${NC}"
+    echo -e "${GREEN}$1${NC}" >&2
 }
 
 error(){
-    echo -e "${RED}$1${NC}"
+    echo -e "${RED}$1${NC}" >&2
     [ "$2" = false ] && return
     exit 1
 }

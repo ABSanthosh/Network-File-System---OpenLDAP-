@@ -12,14 +12,12 @@ GREEN='\033[0;32m' # Green
 RED='\033[0;31m'   # Red
 NC='\033[0m'       # No Color
 
-
-
 success(){
-    echo -e "${GREEN}$1${NC}"
+    echo -e "${GREEN}$1${NC}" >&2
 }
 
 error(){
-    echo -e "${RED}$1${NC}"
+    echo -e "${RED}$1${NC}" >&2
     [ "$2" = false ] && return
     exit 1
 }
@@ -98,11 +96,11 @@ DeleteLDAPUser(){
 ListUsers(){
     local serial=0
 
-    echo "List of users:"
+    echo "List of users:" >&2
     while IFS=: read -r username _ _ _ _ home _; do
         if [[ "$home" == "${HOME_DIR}"* ]]; then
             ((serial++))
-            echo "${serial}) $username"
+            echo "${serial}) $username" >&2
         fi
     done < /etc/passwd
 
@@ -110,12 +108,8 @@ ListUsers(){
     if [[ "$serial" -eq 0 ]]; then
         error "Error: No users found."
     fi
-}
 
-ConfirmUser(){
     read -p "Select a username to delete: " username
-    echo "$username"
-    echo "$(grep "^${username}:" /etc/passwd | cut -d: -f6)"
     # if username not in list and user's home directory is not in /nclnfs/users, then show error message and exit
     if ! grep -q "^${username}:" /etc/passwd || ! [[ "$(grep "^${username}:" /etc/passwd | cut -d: -f6)" == "${HOME_DIR}"* ]]; then
         error "Error: Invalid username '$username'."
@@ -126,21 +120,21 @@ ConfirmUser(){
         error "Error: Username mismatch."
     fi
 
+    error "Warning: This will delete the user '$username' from the system and LDAP." false
     read -p "Are you sure you want to delete user '$username'? (yes/no): " confirmation
     if [[ "$confirmation" != "yes" ]]; then
         error "User deletion canceled."
     fi
 
-    echo "$username"
+    echo "$username" 
 }
 
 
 # ==================== Main Script ====================
 check_sudo
-ListUsers
-username=$(ConfirmUser)
+username=$(ListUsers) || exit 1
 
-# ClearTempFiles
-# DeleteLDAPUser "$username"                               # Delete the user from LDAP
-# DeleteLocalUser "$username"                              # Delete the user from the local system
-# ClearTempFiles                                           # Remove the temporary files
+ClearTempFiles
+DeleteLDAPUser "$username"                               # Delete the user from LDAP
+DeleteLocalUser "$username"                              # Delete the user from the local system
+ClearTempFiles                                           # Remove the temporary files
