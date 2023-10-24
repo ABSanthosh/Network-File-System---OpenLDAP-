@@ -1,0 +1,40 @@
+slappasswd
+> a
+> {SSHA}WDiEFsqn+ZNUGJDs+ApXfNsXME0Ts+Xk
+
+
+/etc/fstab
+192.168.122.62:/nclnfs /nclnfs                  nfs     defaults        0 0
+
+ldapsearch -x cn=rb875 -b dc=ncl,dc=in
+ldapsearch -x cn=rs327 -b dc=ncl,dc=in
+ldapsearch -x cn=venkat -b dc=ncl,dc=in
+
+>>>> setup nfs
+Server
+yum install nfs-utils
+systemctl start rpcbind
+systemctl enable rpcbind
+systemctl start nfs
+systemctl enable nfs
+
+mkdir /nclnfs
+
+echo "/nclnfs *(rw,sync,no_root_squash)" >> "/etc/exports"
+systemctl restart nfs
+systemctl restart rpcbind
+
+firewall-cmd --add-service={nfs,rpc-bind,mountd} --permanent
+firewall-cmd --reload
+
+Client
+yum install nfs-utils
+systemctl start rpcbind
+systemctl enable rpcbind
+showmount -e 192.168.122.62
+
+echo "192.168.122.62:/nclnfs /nclnfs                  nfs     defaults        0 0" >> "/etc/fstab"
+mount -a
+
+
+authconfig --enableldap --enableldapauth --ldapserver="ldap://192.168.122.62" --ldapbasedn="dc=ncl,dc=in" --enablemkhomedir --update
