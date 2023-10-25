@@ -8,6 +8,7 @@ This is a guide to setup OpenLDAP server and client in CentOS 7. The server is c
 - [Contents](#contents)
 - [TODO](#todo)
 - [Configuration](#configuration)
+- [VM Setup](#vm-setup)
 - [Server LDAP Config](#server)
 - [Client LDAP Config](#client)
 - [Add user and delete user](#add-user-and-delete-user)
@@ -22,10 +23,42 @@ This is a guide to setup OpenLDAP server and client in CentOS 7. The server is c
 | Host Name   | tcad00         | tcad01         |
 | IP Address  | 192.168.122.62 | 192.168.122.70 |
 
+<details>
+<summary>Config Diagram</summary>
 
 ![image](https://github.com/ABSanthosh/FinQuest/assets/24393343/9f48b388-089d-4659-a05a-cfc9e3eea184)
+</details>
 
+## VM Setup
+1) Install CentOS
+2) run the following commands
+```Shell
+# To setup graphical interface: https://www.cyberithub.com/how-to-install-gnome-desktop-gui-on-centos-7/
+[root@tcadxx ~] sudo yum update 
+[root@tcadxx ~] sudo yum groupinstall "GNOME Desktop" "Graphical Administration Tools"
+[root@tcadxx ~] sudo systemctl set-default graphical
+[root@tcadxx ~] reboot
+# After reboot, you'll get gnome signin
+```
 
+3) Disable SELinux(Because it is disabled in other tcad devices)
+```shell
+[root@tcadxx ~] sudo vim /etc/selinux/config
+# This file controls the state of SELinux on the system.
+# SELINUX= can take one of these three values:
+#     enforcing - SELinux security policy is enforced.
+#     permissive - SELinux prints warnings instead of enforcing.
+#     disabled - No SELinux policy is loaded.
+SELINUX=disabled # <-------------------------------------------------------- this line has to be changed to "disabled"
+# SELINUXTYPE= can take one of three values:
+#     targeted - Targeted processes are protected,
+#     minimum - Modification of targeted policy. Only selected processes are protected. 
+#     mls - Multi Level Security protection.
+SELINUXTYPE=targeted 
+```
+4) Your device should be ready with to add OpenLDAP and NFS now.
+
+_Note: While installing CentOS in VM, make sure to enable network and set hostname in the setup itself. Otherwise, you'll have to do it manually._
 
 ## Server
 
