@@ -38,3 +38,10 @@ mount -a
 
 
 authconfig --enableldap --enableldapauth --ldapserver="ldap://192.168.122.62" --ldapbasedn="dc=ncl,dc=in" --enablemkhomedir --update
+
+
+>>>>> ppolicy
+ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/ppolicy.ldif
+ldapsearch -LLL -Y EXTERNAL -H ldapi:/// -b cn=config -LLL dn
+
+ldapmodify -Y EXTERNAL -H ldapi:/// -f ppolicy-module.ldif
