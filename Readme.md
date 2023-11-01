@@ -139,9 +139,9 @@ dn: olcDatabase={2}hdb,cn=config
 changetype: modify
 add: olcAccess
 olcAccess: {0}to attrs=userPassword,shadowLastChange by
-  dn="cn=Manager,dc=ncl,dc=in" write by anonymous auth by self write by * none
+  * write by anonymous auth by self write by * none
 olcAccess: {1}to dn.base="" by * read
-olcAccess: {2}to * by dn="cn=Manager,dc=ncl,dc=in" write by * read
+olcAccess: {2}to * by dn="cn=People,dc=ncl,dc=in" write by * read
 
 [root@tcad00] ldapmodify -Y EXTERNAL -H ldapi:/// -f chdomain.ldif
 ```
@@ -213,39 +213,6 @@ fallback_homedir = /home/%u        # <= Incase NFS isn't working, there should b
 ```shell
 [root@tcad01 ~]# systemctl restart sssd
 ```
-
-<br/>
-<br/>
-
-## PPolicy Setup
-1) Before you can add modules to a dynamic OpenLDAP backend the `cn=module` section should be added.
-
-```shell
-[root@tcad00 ~] cat module.ldif
-dn: cn=module,cn=config
-objectClass: olcModuleList
-cn: module
-olcModulepath: /usr/lib64/openldap
-olcModuleload: back_hdb.la
-[root@tcad00 ~] ldapadd -x -D cn=config -W -f module.ldif
-```
-This will add `/etc/openldap/slapd.d/cn=config/cn=module{0}.ldif` file.
-
-2) Add PPolicy module
-```shell
-[root@tcad00 ~] cat ppolicy-mod.ldif 
-dn: cn=module{0},cn=config
-changetype: modify
-add: olcModuleLoad
-olcModuleLoad: ppolicy.la
-[root@tcad00 ~] ldapadd -x -D cn=config -W -f ppolicy-mod.ldif
-```
-
-Now the module can be configured, by adding the config options to hdb section. The options of the available modules can be found in the `slapo-<modulename>` man-page.
-
-### Ref
-- [Adding modules to OpenLDAP](https://www.oostergo.net/node/41)
-
 
 <br/>
 <br/>

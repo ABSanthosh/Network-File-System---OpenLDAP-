@@ -40,6 +40,7 @@ mount -a
 authconfig --enableldap --enableldapauth --ldapserver="ldap://192.168.122.62" --ldapbasedn="dc=ncl,dc=in" --enablemkhomedir --update
 
 
+
 TODO
 - Add a stuff to basedomain
 dn: ou=People,dc=ncl,dc=in
@@ -55,3 +56,26 @@ add: passwordMustChange
 passwordMustChange: on
 
 ldapmodify -H ldapi:/// -D "cn=Manager,dc=ncl,dc=in" -W -f
+
+
+
+ldapmodify -Q -Y EXTERNAL -H ldapi:///
+dn: uid=hb875,ou=People,dc=ncl,dc=in
+changetype: modify
+add: objectClass
+objectClass: pwdPolicy
+-
+add: pwdAttribute
+pwdAttribute: userPassword
+-
+add: pwdMinLength
+pwdMinLength: 4
+-
+add: pwdMustChange
+pwdMustChange: TRUE
+-
+add: pwdReset
+pwdReset: TRUE
+-
+add: pwdPolicySubentry
+pwdPolicySubentry: uid=hb875,ou=People,dc=ncl,dc=in
