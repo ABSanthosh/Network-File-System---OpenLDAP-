@@ -96,6 +96,18 @@ DeleteLDAPUser(){
 ListUsers(){
     local serial=0
 
+    while IFS=: read -r username _ _ _ _ home _; do
+        if [[ "$home" == "${HOME_DIR}"* ]]; then
+            ((serial++))
+        fi
+    done < /etc/passwd
+
+    # If no users found, show error message and exit
+    if [[ "$serial" -eq 0 ]]; then
+        error "Error: No users found."
+    fi
+
+    serial=0
     echo "List of users:" >&2
     while IFS=: read -r username _ _ _ _ home _; do
         if [[ "$home" == "${HOME_DIR}"* ]]; then

@@ -145,6 +145,18 @@ olcAccess: {2}to * by dn="cn=Manager,dc=ncl,dc=in" write by * read
 [root@tcad00] ldapmodify -Y EXTERNAL -H ldapi:/// -f chdomain.ldif
 ```
 
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+add: olcAccess
+olcAccess: {0}to attrs=userPassword,shadowLastChange 
+  by self write 
+  by anonymous auth 
+  by self write 
+  by users none
+olcAccess: {1}to dn.base="" by * read
+olcAccess: {2}to * by dn="cn=Manager,dc=ncl,dc=in" write by * read
+
+
 7) Set your base domain for LDAP DB
 ```shell
 [root@tcad00 ldap] cat basedomain.ldif 

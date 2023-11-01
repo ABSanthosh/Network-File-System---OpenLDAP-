@@ -34,10 +34,29 @@ ClearTempFiles(){
     rm -f "$LDAP_LDIF_FILE"
 }
 
+GenerateUID() {
+  local start_uid=3000
+  local max_uid=6000  
+
+  # Find the first available UID in the range
+  for ((uid = start_uid; uid <= max_uid; uid += 1)); do
+    if ! id "$uid" &>/dev/null; then
+      echo "$uid"
+      return
+    fi
+  done
+
+  error "Error: No available UID in the specified range."
+  return 1
+}
+
 CreateLocalUser() {
-    local username="$1"                                            # Username to create from the first argument
-    useradd -m -d "$HOME_DIR/$username" "$username"                # Create a local user with a home directory
-    local exit_code="$?"                                           # Capture the exit code of the previous command
+    # print uid
+    echo "UID: $(GenerateUID)" >&2
+
+    local username="$1"                                                         # Username to create from the first argument
+    useradd -m -u "$(GenerateUID)"  -d "$HOME_DIR/$username" "$username"        # Create the user with the next available UID
+    local exit_code="$?"                                                        # Capture the exit code of the previous command
 
     # Display appropriate messages based on the exit code with colors
     case $exit_code in
