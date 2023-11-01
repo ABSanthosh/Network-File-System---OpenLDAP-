@@ -6,6 +6,7 @@ DC_NAME="ncl"
 DC_DOMAIN="in"
 LDAP_PASSWD="a"
 LDAP_LDIF_FILE="/tmp/user.ldif"
+LDAP_PASSWD_FILE="/tmp/user-pass-expire.ldif"
 
 
 # ANSI color codes
@@ -32,6 +33,7 @@ check_sudo() {
 
 ClearTempFiles(){
     rm -f "$LDAP_LDIF_FILE"
+    rm -f "$LDAP_PASSWD_FILE"
 }
 
 CreateLocalUser() {
@@ -133,8 +135,7 @@ GenerateUserLDIF() {
     echo "shadowMin: $(passwd -S "$USER_ID" | awk '{print $4}')" >> "$LDAP_LDIF_FILE"
     echo "shadowMax: $(passwd -S "$USER_ID" | awk '{print $5}')" >> "$LDAP_LDIF_FILE"
     echo "shadowLastChange: $LASTCHANGE_FLAG" >> "$LDAP_LDIF_FILE"
-    
-    echo "" >> "$LDAP_LDIF_FILE"
+    # echo "shadowLastChange: 0" >> "$LDAP_LDIF_FILE"    
     echo "" >> "$LDAP_LDIF_FILE"
     
     echo "dn: cn=$USER_ID,ou=Group,$SUFFIX" >> "$LDAP_LDIF_FILE"
@@ -168,6 +169,83 @@ CreateLDAPUser(){
     ClearTempFiles                                       # Remove the temporary files
 }
 
+ExpireLDAPPassword(){
+    local username="$1"
+    local SUFFIX="dc=$DC_NAME,dc=$DC_DOMAIN"
+
+    # dn: uid=testuser,ou=users,dc=tylersguides,dc=com
+    # changetype: modify
+    # add: objectClass
+    # objectClass: pwdPolicy
+    
+    echo "dn: uid=$username,ou=People,$SUFFIX" >> "$LDAP_PASSWD_FILE"
+    echo "changetype: modify" >> "$LDAP_PASSWD_FILE"
+    echo "add: objectClass" >> "$LDAP_PASSWD_FILE"
+    echo "objectClass: pwdPolicy" >> "$LDAP_PASSWD_FILE"
+    echo "" >> "$LDAP_PASSWD_FILE"
+
+    # add: pwdAttribute
+    # pwdAttribute: userPassword
+    # echo "dn: uid=$username,ou=People,$SUFFIX" >> "$LDAP_PASSWD_FILE"
+    # echo "changetype: modify" >> "$LDAP_PASSWD_FILE"
+    # echo "add: pwdAttribute" >> "$LDAP_PASSWD_FILE"
+    # echo "pwdAttribute: userPassword" >> "$LDAP_PASSWD_FILE"
+    # echo "" >> "$LDAP_PASSWD_FILE"
+
+    # # add: pwdPolicySubentry
+    # # pwdPolicySubentry: uid=testuser,ou=users,dc=tylersguides,dc=com
+    # echo "dn: uid=$username,ou=People,$SUFFIX" >> "$LDAP_PASSWD_FILE"
+    # echo "changetype: modify" >> "$LDAP_PASSWD_FILE"
+    # echo "add: pwdPolicySubentry" >> "$LDAP_PASSWD_FILE"
+    # echo "pwdPolicySubentry: uid=$username,ou=People,$SUFFIX" >> "$LDAP_PASSWD_FILE"
+    # echo "" >> "$LDAP_PASSWD_FILE"
+
+    # # pwdMustChange
+    # echo "dn: uid=$username,ou=People,$SUFFIX" >> "$LDAP_PASSWD_FILE"
+    # echo "changetype: modify" >> "$LDAP_PASSWD_FILE"
+    # echo "add: pwdMustChange" >> "$LDAP_PASSWD_FILE"
+    # echo "pwdMustChange: TRUE" >> "$LDAP_PASSWD_FILE"
+    # echo "" >> "$LDAP_PASSWD_FILE"
+
+
+
+    # echo "dn: uid=$username,ou=People,$SUFFIX" >> "$LDAP_PASSWD_FILE"
+    # echo "changetype: modify" >> "$LDAP_PASSWD_FILE"
+    # echo "add: pwdReset" >> "$LDAP_PASSWD_FILE"
+    # echo "pwdReset: TRUE" >> "$LDAP_PASSWD_FILE"
+    # echo "" >> "$LDAP_PASSWD_FILE"
+    
+    # echo "dn: uid=$username,ou=People,$SUFFIX" >> "$LDAP_PASSWD_FILE"
+    # echo "changetype: modify" >> "$LDAP_PASSWD_FILE"
+    # echo "add: pwdMustChange" >> "$LDAP_PASSWD_FILE"
+    # echo "pwdMustChange: TRUE" >> "$LDAP_PASSWD_FILE"
+    # echo "" >> "$LDAP_PASSWD_FILE"
+
+    # echo "dn: uid=$username,ou=People,$SUFFIX" >> "$LDAP_PASSWD_FILE"
+    # echo "changetype: modify" >> "$LDAP_PASSWD_FILE"
+    # echo "add: pwdAllowUserChange" >> "$LDAP_PASSWD_FILE"
+    # echo "pwdAllowUserChange: TRUE" >> "$LDAP_PASSWD_FILE"
+    # echo "" >> "$LDAP_PASSWD_FILE"
+
+    # echo "dn: uid=$username,ou=People,$SUFFIX" >> "$LDAP_PASSWD_FILE"
+    # echo "changetype: modify" >> "$LDAP_PASSWD_FILE"    
+    # echo "add: pwdPolicySubentry" >> "$LDAP_PASSWD_FILE"
+    # echo "pwdPolicySubentry: uid=$username,ou=People,$SUFFIX" >> "$LDAP_PASSWD_FILE"
+
+
+    # ldapadd -x -D "cn=Manager,dc=$DC_NAME,dc=$DC_DOMAIN" -w "$LDAP_PASSWD" -f "$LDAP_PASSWD_FILE"
+    ldapmodify -H ldapi:/// -D "cn=Manager,dc=$DC_NAME,dc=$DC_DOMAIN" -w "$LDAP_PASSWD" -f "$LDAP_PASSWD_FILE"
+    local exit_code="$?"
+
+    case $exit_code in
+        0)
+            success "Password for user '$username' successfully expired in LDAP."
+            ;;
+        *)
+            error "Error: Failed to expire password for user '$username' in LDAP." 
+            ;;
+    esac
+}
 
 # ==================== Main Script ====================
 check_sudo
@@ -177,4 +255,5 @@ ClearTempFiles
 CreateLocalUser "$username"                              # Call the function to create a local user
 GenerateUserLDIF "$username"                             # Call the function to generate the LDIF file for the user
 CreateLDAPUser "$username"                               # Call the function to create the user in LDAP
+ExpireLDAPPassword "$username"                           # Call the function to expire the password for the user in LDAP
 ClearTempFiles

@@ -11,6 +11,7 @@ This is a guide to setup OpenLDAP server and client in CentOS 7. The server is c
 - [VM Setup](#vm-setup)
 - [Server LDAP Config](#server)
 - [Client LDAP Config](#client)
+- [PPolicy Setup](#ppolicy-setup)
 - [Add user and delete user](#add-user-and-delete-user)
 - [Setup NFS for home directories](#setup-nfs-for-home-directories)
 
@@ -169,7 +170,12 @@ dn: ou=Group,dc=ncl,dc=in
 objectClass: organizationalUnit
 ou: Group
 
-[root@tcad00] ldapadd -x -D cn=Manager,dc=srv,dc=world -W -f basedomain.ldif
+dn: ou=Policies,dc=ncl,dc=in
+objectClass: organizationalUnit
+objectClass: top
+ou: Policies
+
+[root@tcad00] ldapadd -x -D cn=Manager,dc=ncl,dc=in -W -f basedomain.ldif
 ```
 
 8) Configure firewall
@@ -210,6 +216,40 @@ fallback_homedir = /home/%u        # <= Incase NFS isn't working, there should b
 
 <br/>
 <br/>
+
+## PPolicy Setup
+1) Before you can add modules to a dynamic OpenLDAP backend the `cn=module` section should be added.
+
+```shell
+[root@tcad00 ~] cat module.ldif
+dn: cn=module,cn=config
+objectClass: olcModuleList
+cn: module
+olcModulepath: /usr/lib64/openldap
+olcModuleload: back_hdb.la
+[root@tcad00 ~] ldapadd -x -D cn=config -W -f module.ldif
+```
+This will add `/etc/openldap/slapd.d/cn=config/cn=module{0}.ldif` file.
+
+2) Add PPolicy module
+```shell
+[root@tcad00 ~] cat ppolicy-mod.ldif 
+dn: cn=module{0},cn=config
+changetype: modify
+add: olcModuleLoad
+olcModuleLoad: ppolicy.la
+[root@tcad00 ~] ldapadd -x -D cn=config -W -f ppolicy-mod.ldif
+```
+
+Now the module can be configured, by adding the config options to hdb section. The options of the available modules can be found in the `slapo-<modulename>` man-page.
+
+### Ref
+- [Adding modules to OpenLDAP](https://www.oostergo.net/node/41)
+
+
+<br/>
+<br/>
+
 
 ## Add user and delete user
 

@@ -40,8 +40,18 @@ mount -a
 authconfig --enableldap --enableldapauth --ldapserver="ldap://192.168.122.62" --ldapbasedn="dc=ncl,dc=in" --enablemkhomedir --update
 
 
->>>>> ppolicy
-ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/ppolicy.ldif
-ldapsearch -LLL -Y EXTERNAL -H ldapi:/// -b cn=config -LLL dn
+TODO
+- Add a stuff to basedomain
+dn: ou=People,dc=ncl,dc=in
+objectClass: organizationalUnit
+ou: People 
+like this for pwdPolicy
 
-ldapmodify -Y EXTERNAL -H ldapi:/// -f ppolicy-module.ldif
+ldapmodify -h 127.0.0.1 -D "cn=Directory Manager" -W -x << EOF > dn: cn=config > changetype: modify > replace: passwordMustChange > passwordMustChange: off > EOF
+
+dn: cn=config
+changetype: modify
+add: passwordMustChange
+passwordMustChange: on
+
+ldapmodify -H ldapi:/// -D "cn=Manager,dc=ncl,dc=in" -W -f
