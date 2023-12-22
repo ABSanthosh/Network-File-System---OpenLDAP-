@@ -23,15 +23,12 @@
 # Date          By                     Change Notes
 # ------------  ---------------------- ------------------------------------------
 # 27/11/23      Santhosh(sb875)        Updated with copy right notice and disclaimer.
-# 
-# ...
-# ...more entries as needed
 
 # Constants
 HOME_DIR="/nclnfs/users"
 DC_NAME="ncl"
 DC_DOMAIN="in"
-LDAP_PASSWD="a"
+LDAP_PASSWD=""
 LDAP_LDIF_FILE="/tmp/userPasswd.ldif"
 
 # ANSI color codes
