@@ -88,13 +88,13 @@ systemctl enable slapd
 [root@tcad00] slappasswd 
 New password: 
 Re-enter new password: 
-{SSHA}BImora09h57dbDn7R9J0RXdnwB8cjshz
+{SSHA}################################
 
 [root@tcad00] cat chrootpw.ldif 
 dn: olcDatabase={0}config,cn=config
 changetype: modify
 add: olcRootPW
-olcRootPW: {SSHA}BImora09h57dbDn7R9J0RXdnwB8cjshz
+olcRootPW: {SSHA}################################
 
 [root@tcad00] ldapadd -Y EXTERNAL -H ldapi:/// -f chrootpw.ldif
 SASL/EXTERNAL authentication started
@@ -133,7 +133,7 @@ olcRootDN: cn=Manager,dc=ncl,dc=in
 dn: olcDatabase={2}hdb,cn=config
 changetype: modify
 add: olcRootPW
-olcRootPW: {SSHA}BImora09h57dbDn7R9J0RXdnwB8cjshz     #<=============Directory Manager's password (same as openldap admin password)
+olcRootPW: {SSHA}################################     #<=============Directory Manager's password (same as openldap admin password)
 
 dn: olcDatabase={2}hdb,cn=config
 changetype: modify
