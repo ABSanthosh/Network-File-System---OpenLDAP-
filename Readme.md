@@ -268,3 +268,50 @@ mount -a
 ```
 
 Now client can see the exported `/nclnfs` directory and all the home directories in it.
+
+### Maintaining Window-copies
+1) Create new user `sysdev`
+```shell
+[root@tcad00 ~]# useradd sysdev
+[root@tcad00 ~]# passwd sysdev
+Changing password for user sysdev.
+New password:
+Retype new password:
+passwd: all authentication tokens updated successfully.
+```
+2) add `sysdev` to `/etc/sudoers` file
+```shell
+[root@tcad00 ~]# vim /etc/sudoers
+# User privilege specification
+root    ALL=(ALL)       ALL
+sysdev  ALL=(ALL)       ALL #<==================== add this line
+```
+3) Create a new directory `/ldapScripts/scripts/window-copies`
+```shell
+[root@tcad00 ~]# mkdir -p /ldapScripts/scripts/window-copies
+[root@tcad00 ~]# chown sysdev /ldapScripts/scripts/window-copies
+```
+4) Add the scripts and change ownership to `sysdev`
+```shell
+[root@tcad00 ~]# git clone `https://github.com/ABSanthosh/Network-File-System-with-OpenLDAP.git`
+[root@tcad00 ~]# cp Network-File-System-with-OpenLDAP/scripts/* /ldapScripts/scripts/window-copies/
+# remove everything except .sh files
+[root@tcad00 ~]# rm -rf [root@tcad00 ~]# rm -rf !(*.sh)
+[root@tcad00 ~]# chown sysdev /ldapScripts/scripts/window-copies/*
+```
+5) Init a new git repo
+```shell
+[root@tcad00 ~]# cd /ldapScripts/scripts/window-copies/
+[root@tcad00 window-copies]# git init
+[root@tcad00 window-copies]# git add .
+[root@tcad00 window-copies]# git config --global user "sb875"
+[root@tcad00 window-copies]# git config --global email "sb875@snu.edu.in"
+[root@tcad00 window-copies]# git commit -m "Initial commit"
+```
+6) Add it to PATH variable
+```shell
+[root@tcad00 window-copies]# cp /etc/profile /etc/profile.bak
+[root@tcad00 ~]# echo "export PATH=$PATH:/ldapScripts/scripts/window-copies" >> /etc/profile
+[root@tcad00 ~]# source /etc/profile
+```
+_Now, we can call `addUser.sh`, `delUser.sh` and `modifyPassed.sh` from anywhere in the system._
